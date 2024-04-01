@@ -46,13 +46,15 @@ Ensure these libraries are installed in your Python environment before running t
 
 To run ArrakisProfiler, run the script with the following within the parent directory:
 
-python3 main.py inputfiles/clinical_data.txt inputfiles/diversity_scores/ inputfiles/distance_files/ --cluster
+```python3 main.py inputfiles/clinical_data.txt inputfiles/diversity_scores/ inputfiles/distance_files/ --cluster```
 
 If your desired files are outside of the parent directory then run
-
+```
 python3 main.py "<path>/<to>/<your>/clinical_data.txt" "<path>/<to>/<your>/diversity_scores/" "<path>/<to>/<your>/distance_files/" --cluster
+```
 
 # Optional Arguments:
-
+```
 -l, --logging: Enable verbose logging.
 -c, --cluster: Enable graphing via clusters derived from the elbow method.
+```
