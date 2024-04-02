@@ -1,5 +1,6 @@
 from sklearn.cluster import KMeans
 from sklearn import metrics
+from scipy.spatial.distance import cdist
 import sys
 import pandas as pd
 import numpy as np
@@ -119,12 +120,12 @@ def find_distance(curated_data:pd.DataFrame, distance_dir:str ,file_ext:str=".di
             #being the respective code name
             distance_by_name[code_name] = distance_coordinates
         except FileNotFoundError as error:
-            logging.error(f"{distance_file} not found!!!")
+            logging.error(f"{diversity_file} not found!!!")
             logging.warning("Exiting workflow!!!")
             sys.exit(1)
         except Exception as error:
             logging.error(f"The following error occured!!!")
-            logging.error(error)
+            logging.error(e)
             logging.warning("Exiting workflow!!!")
             sys.exit(1)
     return distance_by_name
@@ -145,6 +146,8 @@ def create_scatter(pandas_dict:dict, by_cluster:bool=False)->None:
         if by_cluster:
             logging.info(f"Graphing by cluster enabled. Creating scatter plot with clustering for {code_name}")
             fig = sns.scatterplot(data=data, x="X", y="Y", hue = "Cluster", palette="deep").set_title(f"{code_name} plot")
+            plt.legend(loc='upper right', bbox_to_anchor=(1.14, 0.9))
+            plt.annotate('Cluster Id', xy=(1.01, 0.90), xycoords='axes fraction', fontsize=8)
         #if the cluster argument is not used, the data is simply plotted with no
         #extra visualizatin details
         else:
@@ -155,6 +158,19 @@ def create_scatter(pandas_dict:dict, by_cluster:bool=False)->None:
         #the plot is closed so a new plot object can be created
         plt.close()
 
+def create_elbow(distortions:list, cluster_range: list, code_name:str)->None:
+    #this function takes in two lists and a string
+    #the cluster range is used for the x-axis
+    #and the distoriton values are used for the x axis
+    plt.plot(cluster_range, distortions,'o-')
+    plt.xlabel('k')
+    plt.ylabel('Distortion')
+    plt.title(f'The Elbow Method showing the optimal k for {code_name}')
+    #the figure generated is saved with the animal code name
+    #followed by _elbow_plot
+    plt.savefig(f'{code_name}_elbow_plot.png')
+    #the figure is then closed 
+    plt.close()
 
 def optimal_cluster(pandas_dict:dict)->dict:
     #this function takes in a dictionary with pandas dataframes
@@ -166,10 +182,11 @@ def optimal_cluster(pandas_dict:dict)->dict:
     #will be the updated dataframes with cluster labels
     cluster_by_name = {}
     #a list of cluster amounts is created using the range function
-    cluster_range = range(1,10)
+    cluster_range = range(1,11)
     #for each code name and dataframe
     #a KMeans calculation using the elbow method is executed
     for code_name in code_names:
+        distortions = []
         logging.info(f"Determining optimal cluster for {code_name}")
         #for every proposed cluster and its cluster label generated
         #the values are stored as key : values entries in dict
@@ -187,8 +204,9 @@ def optimal_cluster(pandas_dict:dict)->dict:
             #for each cluster within our list of clusters KMeans is ran, and 
             #the value of the cluster size is passed into n_clusters.
             logging.info(f"Calculating KMeans with proposed cluster {cluster} for {code_name}")
-            kmean_model = KMeans(n_clusters=cluster).fit_predict(reshaped_data)
-            cluster_labels[cluster] = kmean_model
+            kmean_model = KMeans(n_clusters=cluster).fit(reshaped_data)
+            kmean_model.fit(reshaped_data)
+            distortions.append(sum(np.min(cdist(reshaped_data, kmean_model.cluster_centers_, 'euclidean'), axis=1)) / reshaped_data.shape[0])
             if cluster == 1:
                 #if the cluster size is 1, it is skipped.
                 #the silhouette_score function from sklearn requires the cluster
@@ -198,8 +216,11 @@ def optimal_cluster(pandas_dict:dict)->dict:
             logging.info(f"Computing silhouette score for cluster size {cluster}")
             #the silhouette score is calculated and stored as a value with the cluster size 
             #stored as the keyf.
+            kmean_model = KMeans(n_clusters=cluster).fit_predict(reshaped_data)
+            cluster_labels[cluster] = kmean_model
             silhouette_score = metrics.silhouette_score(data, kmean_model)
             silhouette_scores[cluster] = silhouette_score
+        create_elbow(distortions, cluster_range, code_name)
         #for the given the code name, the highest silhouette value is found
         #and the associated cluster number is returned as the best cluster amount
         best_cluster = [k for k,v in silhouette_scores.items() if v == max(silhouette_scores.values())][0]
