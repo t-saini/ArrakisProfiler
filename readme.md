@@ -1,7 +1,10 @@
 # ArrakisProfiler
 # Author: Tanvir Saini
 
-ArrakisProfiler is a Python tool designed for analyzing clinical data, diversity scores, and generating scatter plots based on distance files.
+ArrakisProfiler is a Python tool designed to analyze clinical data along with associated diversity scores and distance files. 
+It provides a comprehensive suite of functionalities for data reading, statistical analysis, visualization, and clustering.
+The optional clustering feature, allowing users to identify optimal cluster numbers using the elbow method. This tool is 
+equipped with an easy-to-use command-line interface.
 
 ## Description
 
