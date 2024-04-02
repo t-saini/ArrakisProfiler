@@ -60,3 +60,27 @@ python3 main.py "<path>/<to>/<your>/clinical_data.txt" "<path>/<to>/<your>/diver
 -l, --logging: Enable verbose logging.
 -c, --cluster: Enable graphing via clusters derived from the elbow method.
 ```
+
+# Error Handling
+
+
+1. File Existence Verification:
+    Before processing any data, ArrakisProfiler verifies the existence of specified input files and directories. 
+    If any file or directory is missing, the tool promptly notifies the user and exits the workflow to prevent erroneous execution.
+
+2. Exception Handling:
+    Throughout the workflow, ArrakisProfiler employs exception handling techniques to gracefully handle unexpected errors or exceptions. 
+    In the event of an error, the tool provides detailed error messages, enabling users to identify and troubleshoot issues effectively.
+
+3. Argument Validation: 
+    ArrakisProfiler validates command-line arguments provided by the user to ensure they adhere to expected formats and conventions. 
+    Invalid arguments are flagged, and appropriate error messages are displayed, guiding users on correct usage.
+
+4. Logging: 
+    The tool offers optional verbose logging functionality, allowing users to enable detailed logging messages for better visibility 
+    into the execution flow. This feature aids in debugging and troubleshooting, especially in complex analysis scenarios.
+
+# Final Note: Clustering analysis
+The optimal number of clusters are automatically calculated using the silhouette coefficent. If the number of
+optimal clusters determined using the silhouette coefficent does not match the associated elbow plot, then additional
+statistical tests may needed to determine if an optimal cluster value exists.
